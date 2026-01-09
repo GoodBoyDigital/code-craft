@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { loadFromStorage, saveToStorage } from "@/lib/storage";
+import { loadFromStorage, saveToStorage, removeFromStorage } from "@/lib/storage";
 
 type ModalType = "fork" | "merge" | "delete" | null;
 
@@ -37,6 +37,7 @@ interface UIState {
   // Node positions (for manual layout persistence)
   nodePositions: Record<string, NodePosition>;
   setNodePosition: (id: string, position: NodePosition) => void;
+  clearAllPositions: () => void;
   savePositions: () => void;
   loadPositions: () => void;
 
@@ -70,6 +71,11 @@ export const useUIStore = create<UIState>()(
       set((state) => {
         state.nodePositions[id] = position;
       }),
+
+    clearAllPositions: () => {
+      set({ nodePositions: {} });
+      removeFromStorage(POSITIONS_STORAGE_KEY);
+    },
 
     savePositions: () => {
       const { nodePositions } = get();
