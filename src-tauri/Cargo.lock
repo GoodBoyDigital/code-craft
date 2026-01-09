@@ -1810,7 +1810,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "muscat"
+name = "codecraft"
 version = "0.1.0"
 dependencies = [
  "dirs 5.0.1",

@@ -27,7 +27,7 @@ function generateStableId(path: string): string {
 }
 
 // Storage key for parent relationships
-const PARENT_RELATIONSHIPS_KEY = "muscat-parent-relationships";
+const PARENT_RELATIONSHIPS_KEY = "codecraft-parent-relationships";
 
 // Store branch -> parent branch relationships
 type ParentRelationships = Record<string, string>; // branchName -> parentBranchName

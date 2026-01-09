@@ -45,7 +45,7 @@ interface UIState {
   toggleAutoLayout: () => void;
 }
 
-const POSITIONS_STORAGE_KEY = "muscat-node-positions";
+const POSITIONS_STORAGE_KEY = "codecraft-node-positions";
 
 export const useUIStore = create<UIState>()(
   immer((set, get) => ({

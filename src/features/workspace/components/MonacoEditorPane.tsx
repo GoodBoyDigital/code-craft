@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 // Configure Monaco theme
 loader.init().then((monaco) => {
-  monaco.editor.defineTheme("muscat-dark", {
+  monaco.editor.defineTheme("codecraft-dark", {
     base: "vs-dark",
     inherit: true,
     rules: [
@@ -144,7 +144,7 @@ export function MonacoEditorPane() {
       <div className="flex-1">
         {activeFile ? (
           <Editor
-            theme="muscat-dark"
+            theme="codecraft-dark"
             language={activeFile.language}
             value={activeFile.content}
             onChange={handleEditorChange}
