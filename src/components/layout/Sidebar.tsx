@@ -59,8 +59,8 @@ export function Sidebar() {
 
   return (
     <div className="w-[240px] h-full bg-bg-secondary border-r border-border-subtle flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-border-subtle">
+      {/* Header - pt-8 adds space for macOS traffic lights */}
+      <div className="p-4 pt-8 border-b border-border-subtle" data-tauri-drag-region>
         <div className="flex items-center gap-2 mb-3">
           <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-accent-primary to-accent-success flex items-center justify-center">
             <svg

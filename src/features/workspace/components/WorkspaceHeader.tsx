@@ -9,7 +9,7 @@ interface WorkspaceHeaderProps {
 
 export function WorkspaceHeader({ worktree, onBack }: WorkspaceHeaderProps) {
   return (
-    <div className="h-11 px-4 flex items-center gap-3 bg-bg-secondary border-b border-border-default shrink-0">
+    <div className="h-11 px-4 flex items-center gap-3 bg-bg-secondary border-b border-border-default shrink-0" data-tauri-drag-region>
       <Button variant="ghost" size="sm" onClick={onBack}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
