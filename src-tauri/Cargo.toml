@@ -1,12 +1,12 @@
 [package]
-name = "muscat"
+name = "codecraft"
 version = "0.1.0"
 description = "Visual Git Worktree Manager"
 authors = ["Mat Groves"]
 edition = "2021"
 
 [lib]
-name = "muscat_lib"
+name = "codecraft_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

@@ -1,8 +1,8 @@
-# Muscat - Visual Git Worktree Manager
+# CodeCraft - Visual Git Worktree Manager
 
 ## Project Overview
 
-Muscat is a desktop application for visually managing Git worktrees. It provides a graph-based UI to create, navigate, and manage worktrees with integrated terminal and code editing.
+CodeCraft is a desktop application for visually managing Git worktrees. It provides a graph-based UI to create, navigate, and manage worktrees with integrated terminal and code editing.
 
 **Tech Stack:**
 - **Frontend:** React 18 + TypeScript + Vite
@@ -120,5 +120,5 @@ npm run build  # runs tsc && vite build
 The app can be tested on its own repository:
 ```bash
 # From the main repo
-git worktree add ../muscat-feature feature/my-feature
+git worktree add ../codecraft-feature feature/my-feature
 ```

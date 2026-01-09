@@ -86,7 +86,7 @@ export const useProjectStore = create<ProjectState>()(
       },
     })),
     {
-      name: "muscat-projects",
+      name: "codecraft-projects",
       partialize: (state) => ({
         projects: state.projects,
         activeProjectId: state.activeProjectId,

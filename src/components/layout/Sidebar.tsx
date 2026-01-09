@@ -77,7 +77,7 @@ export function Sidebar() {
               <path d="M12 3v6M12 15v6M3 12h6M15 12h6" />
             </svg>
           </div>
-          <span className="font-semibold text-text-primary">Muscat</span>
+          <span className="font-semibold text-text-primary">CodeCraft</span>
         </div>
         <Button
           variant="default"
