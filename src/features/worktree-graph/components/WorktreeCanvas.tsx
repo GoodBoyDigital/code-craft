@@ -4,6 +4,7 @@ import {
   Background,
   Controls,
   MiniMap,
+  Panel,
   useNodesState,
   useEdgesState,
   type Node,
@@ -15,6 +16,7 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { useWorktreeStore, useUIStore } from "@/store";
+import { Button } from "@/components/ui";
 import { useWorktreeLayout } from "../hooks/useWorktreeLayout";
 import { WorktreeNode } from "./WorktreeNode";
 import { ForkWorktreeModal } from "./ForkWorktreeModal";
@@ -36,7 +38,7 @@ export function WorktreeCanvas() {
     nodePositions,
     loadPositions,
     savePositions,
-    autoLayout,
+    clearAllPositions,
   } = useUIStore();
 
   const { getLayoutedElements } = useWorktreeLayout();
@@ -62,15 +64,13 @@ export function WorktreeCanvas() {
       const { nodes: layoutedNodes, edges: layoutedEdges } =
         await getLayoutedElements(worktrees);
 
-      // Apply saved positions if not using auto-layout
-      const finalNodes = autoLayout
-        ? layoutedNodes
-        : layoutedNodes.map((node) => {
-            const savedPosition = nodePositions[node.id];
-            return savedPosition
-              ? { ...node, position: savedPosition }
-              : node;
-          });
+      // Apply saved positions per-node (ELK positions for new nodes, saved positions for moved nodes)
+      const finalNodes = layoutedNodes.map((node) => {
+        const savedPosition = nodePositions[node.id];
+        return savedPosition
+          ? { ...node, position: savedPosition }
+          : node;
+      });
 
       setNodes(finalNodes);
       setEdges(layoutedEdges);
@@ -83,7 +83,6 @@ export function WorktreeCanvas() {
     getLayoutedElements,
     setNodes,
     setEdges,
-    autoLayout,
     nodePositions,
   ]);
 
@@ -115,6 +114,11 @@ export function WorktreeCanvas() {
   const handlePaneClick = useCallback(() => {
     selectWorktree(null);
   }, [selectWorktree]);
+
+  // Handle reset layout (clear all saved positions)
+  const handleResetLayout = useCallback(() => {
+    clearAllPositions();
+  }, [clearAllPositions]);
 
   if (error) {
     return (
@@ -167,6 +171,16 @@ export function WorktreeCanvas() {
           showInteractive={false}
           className="!bottom-4 !left-4"
         />
+        <Panel position="bottom-left" className="!left-[60px] !bottom-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleResetLayout}
+            className="bg-bg-secondary/80 backdrop-blur-sm"
+          >
+            Reset Layout
+          </Button>
+        </Panel>
         <MiniMap
           nodeColor={(node) => {
             const worktree = (node.data as { worktree: { is_main: boolean } })
