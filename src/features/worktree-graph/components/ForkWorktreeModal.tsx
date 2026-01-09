@@ -2,9 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { homeDir } from "@tauri-apps/api/path";
 import { Modal, Button, Input } from "@/components/ui";
 import { useWorktreeStore, useProjectStore } from "@/store";
-
-// Check if running in Tauri
-const isTauri = typeof window !== "undefined" && "__TAURI__" in window;
+import { isTauri } from "@/lib/environment";
 
 interface ForkWorktreeModalProps {
   isOpen: boolean;

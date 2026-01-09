@@ -6,34 +6,38 @@ import {
   removeWorktree,
   type Worktree,
 } from "@/lib/tauri";
-import { generateId } from "@/lib/utils";
+import { isTauri } from "@/lib/environment";
+import { loadFromStorage, saveToStorage } from "@/lib/storage";
 
-// Check if running in Tauri
-const isTauri = typeof window !== "undefined" && "__TAURI__" in window;
+/**
+ * Generate a stable ID from a worktree path.
+ * This ensures the same worktree always gets the same ID across fetches,
+ * preventing race conditions with parent references.
+ */
+function generateStableId(path: string): string {
+  // Use a simple hash of the path for a stable, short ID
+  let hash = 0;
+  for (let i = 0; i < path.length; i++) {
+    const char = path.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  // Convert to base36 and ensure positive
+  return "wt-" + Math.abs(hash).toString(36);
+}
 
 // Storage key for parent relationships
 const PARENT_RELATIONSHIPS_KEY = "muscat-parent-relationships";
 
 // Store branch -> parent branch relationships
-interface ParentRelationships {
-  [branchName: string]: string; // branchName -> parentBranchName
-}
+type ParentRelationships = Record<string, string>; // branchName -> parentBranchName
 
 function loadParentRelationships(): ParentRelationships {
-  try {
-    const stored = localStorage.getItem(PARENT_RELATIONSHIPS_KEY);
-    return stored ? JSON.parse(stored) : {};
-  } catch {
-    return {};
-  }
+  return loadFromStorage(PARENT_RELATIONSHIPS_KEY, {});
 }
 
 function saveParentRelationships(relationships: ParentRelationships): void {
-  try {
-    localStorage.setItem(PARENT_RELATIONSHIPS_KEY, JSON.stringify(relationships));
-  } catch {
-    // Ignore storage errors
-  }
+  saveToStorage(PARENT_RELATIONSHIPS_KEY, relationships);
 }
 
 export interface WorktreeNode extends Worktree {
@@ -41,11 +45,19 @@ export interface WorktreeNode extends Worktree {
   parentId: string | null;
 }
 
-// Mock data for browser development
+// Mock paths for browser development
+const MOCK_PATHS = {
+  main: "/Users/dev/projects/myapp",
+  feature: "/Users/dev/projects/myapp-feature-auth",
+  fix: "/Users/dev/projects/myapp-fix-login",
+  experiment: "/Users/dev/projects/myapp-experiment",
+};
+
+// Mock data for browser development (using stable IDs)
 const MOCK_WORKTREES: WorktreeNode[] = [
   {
-    id: "main-001",
-    path: "/Users/dev/projects/myapp",
+    id: generateStableId(MOCK_PATHS.main),
+    path: MOCK_PATHS.main,
     head: "abc1234def5678",
     branch: "main",
     is_bare: false,
@@ -54,34 +66,34 @@ const MOCK_WORKTREES: WorktreeNode[] = [
     parentId: null,
   },
   {
-    id: "feat-002",
-    path: "/Users/dev/projects/myapp-feature-auth",
+    id: generateStableId(MOCK_PATHS.feature),
+    path: MOCK_PATHS.feature,
     head: "def5678abc1234",
     branch: "feature/authentication",
     is_bare: false,
     is_detached: false,
     is_main: false,
-    parentId: "main-001",
+    parentId: generateStableId(MOCK_PATHS.main),
   },
   {
-    id: "fix-003",
-    path: "/Users/dev/projects/myapp-fix-login",
+    id: generateStableId(MOCK_PATHS.fix),
+    path: MOCK_PATHS.fix,
     head: "789abc123def45",
     branch: "fix/login-bug",
     is_bare: false,
     is_detached: false,
     is_main: false,
-    parentId: "main-001",
+    parentId: generateStableId(MOCK_PATHS.main),
   },
   {
-    id: "exp-004",
-    path: "/Users/dev/projects/myapp-experiment",
+    id: generateStableId(MOCK_PATHS.experiment),
+    path: MOCK_PATHS.experiment,
     head: "456def789abc12",
     branch: "experiment/new-ui",
     is_bare: false,
     is_detached: false,
     is_main: false,
-    parentId: "feat-002",
+    parentId: generateStableId(MOCK_PATHS.feature),
   },
 ];
 
@@ -132,10 +144,10 @@ export const useWorktreeStore = create<WorktreeState>()(
 
         const worktrees = await listWorktrees(mainPath);
 
-        // Convert to WorktreeNode with IDs
+        // Convert to WorktreeNode with stable IDs based on path
         const worktreeNodes: WorktreeNode[] = worktrees.map((wt) => ({
           ...wt,
-          id: generateId(),
+          id: generateStableId(wt.path),
           parentId: null,
         }));
 
@@ -197,7 +209,7 @@ export const useWorktreeStore = create<WorktreeState>()(
         const { worktrees } = get();
         const parent = worktrees.find((wt) => wt.branch === baseBranch);
         const newWorktree: WorktreeNode = {
-          id: generateId(),
+          id: generateStableId(path),
           path,
           head: Math.random().toString(36).substring(2, 14),
           branch: branchName,

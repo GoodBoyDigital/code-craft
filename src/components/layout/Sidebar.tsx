@@ -2,11 +2,9 @@ import { useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { open } from "@tauri-apps/plugin-dialog";
 import { cn, formatRelativeTime } from "@/lib/utils";
+import { isTauri } from "@/lib/environment";
 import { useProjectStore, useWorktreeStore } from "@/store";
 import { Button } from "@/components/ui";
-
-// Check if running in Tauri
-const isTauri = typeof window !== "undefined" && "__TAURI__" in window;
 
 export function Sidebar() {
   const { projects, activeProjectId, addProject, removeProject, setActiveProject } =

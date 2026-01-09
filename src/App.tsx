@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { WorktreeCanvas } from "@/features/worktree-graph/components/WorktreeCanvas";
+import { WorkspaceView } from "@/features/workspace";
 import { Sidebar } from "@/components/layout";
-import { useProjectStore, useWorktreeStore } from "@/store";
+import { useProjectStore, useWorktreeStore, useUIStore } from "@/store";
 
 function App() {
   const { activeProjectId, getActiveProject } = useProjectStore();
-  const { fetchWorktrees } = useWorktreeStore();
+  const { worktrees, fetchWorktrees } = useWorktreeStore();
+  const { openWorktreeId } = useUIStore();
 
   // Fetch worktrees when active project changes
   useEffect(() => {
@@ -16,6 +18,9 @@ function App() {
     }
   }, [activeProjectId, getActiveProject, fetchWorktrees]);
 
+  // Find the open worktree
+  const openWorktree = worktrees.find((wt) => wt.id === openWorktreeId);
+
   return (
     <div className="h-full w-full bg-bg-primary flex">
       {/* Sidebar */}
@@ -23,12 +28,14 @@ function App() {
 
       {/* Main Content */}
       <div className="flex-1 relative">
-        {activeProjectId ? (
+        {!activeProjectId ? (
+          <EmptyState />
+        ) : openWorktree ? (
+          <WorkspaceView worktree={openWorktree} />
+        ) : (
           <ReactFlowProvider>
             <WorktreeCanvas />
           </ReactFlowProvider>
-        ) : (
-          <EmptyState />
         )}
       </div>
     </div>

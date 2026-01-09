@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { loadFromStorage, saveToStorage } from "@/lib/storage";
 
 type ModalType = "fork" | "merge" | "delete" | null;
-type PanelContent = "terminal" | "details" | null;
 
 interface ModalData {
   baseBranch?: string;
@@ -10,7 +10,7 @@ interface ModalData {
   worktreePath?: string;
   sourceBranch?: string;
   targetBranch?: string;
-  sourceWorktreeId?: string; // ID of the worktree being forked from
+  sourceWorktreeId?: string;
 }
 
 interface NodePosition {
@@ -23,11 +23,10 @@ interface UIState {
   selectedWorktreeId: string | null;
   selectWorktree: (id: string | null) => void;
 
-  // Panel
-  isPanelOpen: boolean;
-  panelContent: PanelContent;
-  openPanel: (content: PanelContent) => void;
-  closePanel: () => void;
+  // Workspace View (full IDE view)
+  openWorktreeId: string | null;
+  openWorktree: (id: string) => void;
+  closeWorkspace: () => void;
 
   // Modals
   activeModal: ModalType;
@@ -54,11 +53,10 @@ export const useUIStore = create<UIState>()(
     selectedWorktreeId: null,
     selectWorktree: (id) => set({ selectedWorktreeId: id }),
 
-    // Panel
-    isPanelOpen: false,
-    panelContent: null,
-    openPanel: (content) => set({ isPanelOpen: true, panelContent: content }),
-    closePanel: () => set({ isPanelOpen: false, panelContent: null }),
+    // Workspace View
+    openWorktreeId: null,
+    openWorktree: (id) => set({ openWorktreeId: id, selectedWorktreeId: id }),
+    closeWorkspace: () => set({ openWorktreeId: null }),
 
     // Modals
     activeModal: null,
@@ -75,23 +73,15 @@ export const useUIStore = create<UIState>()(
 
     savePositions: () => {
       const { nodePositions } = get();
-      try {
-        localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(nodePositions));
-      } catch {
-        // Ignore storage errors
-      }
+      saveToStorage(POSITIONS_STORAGE_KEY, nodePositions);
     },
 
     loadPositions: () => {
-      try {
-        const stored = localStorage.getItem(POSITIONS_STORAGE_KEY);
-        if (stored) {
-          const positions = JSON.parse(stored);
-          set({ nodePositions: positions });
-        }
-      } catch {
-        // Ignore storage errors
-      }
+      const positions = loadFromStorage<Record<string, NodePosition>>(
+        POSITIONS_STORAGE_KEY,
+        {}
+      );
+      set({ nodePositions: positions });
     },
 
     // Layout mode

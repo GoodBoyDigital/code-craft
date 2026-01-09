@@ -1,9 +1,9 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { motion } from "framer-motion";
 import { cn, truncatePath } from "@/lib/utils";
 import { Button } from "@/components/ui";
-import { useUIStore } from "@/store";
+import { useUIStore, useTerminalStore, isClaudeWorking } from "@/store";
 import type { WorktreeNode as WorktreeNodeType } from "@/store/worktreeStore";
 
 interface WorktreeNodeProps {
@@ -16,7 +16,28 @@ export const WorktreeNode = memo(function WorktreeNode({
   selected,
 }: WorktreeNodeProps) {
   const { worktree } = data;
-  const { openModal, openPanel, selectWorktree } = useUIStore();
+  const { openModal, openWorktree } = useUIStore();
+  const { claudeSessions } = useTerminalStore();
+
+  // Get Claude session for this worktree
+  const claudeSession = claudeSessions[worktree.id];
+  const [isWorking, setIsWorking] = useState(false);
+
+  // Update working state periodically (since it's time-based)
+  useEffect(() => {
+    const checkWorking = () => {
+      setIsWorking(isClaudeWorking(claudeSession));
+    };
+
+    checkWorking();
+    const interval = setInterval(checkWorking, 1000);
+    return () => clearInterval(interval);
+  }, [claudeSession]);
+
+  const handleOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    openWorktree(worktree.id);
+  };
 
   const handleFork = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,12 +53,6 @@ export const WorktreeNode = memo(function WorktreeNode({
       sourceBranch: worktree.branch || "",
       worktreePath: worktree.path,
     });
-  };
-
-  const handleTerminal = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    selectWorktree(worktree.id);
-    openPanel("terminal");
   };
 
   return (
@@ -75,6 +90,26 @@ export const WorktreeNode = memo(function WorktreeNode({
         <span className="font-medium text-sm text-text-primary truncate flex-1">
           {worktree.branch || "detached"}
         </span>
+        {/* Claude status indicator */}
+        {claudeSession && (
+          <span
+            className={cn(
+              "flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded",
+              isWorking
+                ? "bg-purple-500/20 text-purple-400"
+                : "bg-text-tertiary/20 text-text-tertiary"
+            )}
+            title={isWorking ? "Claude is working" : "Claude is idle"}
+          >
+            <span
+              className={cn(
+                "w-1.5 h-1.5 rounded-full",
+                isWorking ? "bg-purple-400 animate-pulse" : "bg-text-tertiary"
+              )}
+            />
+            {isWorking ? "Working" : "Idle"}
+          </span>
+        )}
         {worktree.is_main && (
           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-accent-success/20 text-accent-success">
             main
@@ -100,11 +135,11 @@ export const WorktreeNode = memo(function WorktreeNode({
 
       {/* Actions */}
       <div className="flex items-center gap-1.5 px-3 py-2.5 border-t border-border-subtle">
+        <Button variant="primary" size="sm" onClick={handleOpen}>
+          Open
+        </Button>
         <Button variant="ghost" size="sm" onClick={handleFork}>
           Fork
-        </Button>
-        <Button variant="ghost" size="sm" onClick={handleTerminal}>
-          Terminal
         </Button>
         {!worktree.is_main && (
           <Button variant="ghost" size="sm" onClick={handleDone}>

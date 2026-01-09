@@ -18,7 +18,6 @@ import { useWorktreeStore, useUIStore } from "@/store";
 import { useWorktreeLayout } from "../hooks/useWorktreeLayout";
 import { WorktreeNode } from "./WorktreeNode";
 import { ForkWorktreeModal } from "./ForkWorktreeModal";
-import { TerminalPanel } from "@/features/terminal/components/TerminalPanel";
 
 // Register custom node types
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,11 +28,7 @@ const nodeTypes: NodeTypes = {
 export function WorktreeCanvas() {
   const { worktrees, loading, error, fetchWorktrees } = useWorktreeStore();
   const {
-    selectedWorktreeId,
     selectWorktree,
-    isPanelOpen,
-    panelContent,
-    closePanel,
     activeModal,
     modalData,
     closeModal,
@@ -121,9 +116,6 @@ export function WorktreeCanvas() {
     selectWorktree(null);
   }, [selectWorktree]);
 
-  // Get selected worktree for terminal panel
-  const selectedWorktree = worktrees.find((wt) => wt.id === selectedWorktreeId);
-
   if (error) {
     return (
       <div className="h-full w-full flex items-center justify-center">
@@ -186,16 +178,6 @@ export function WorktreeCanvas() {
           style={{ width: 150, height: 100 }}
         />
       </ReactFlow>
-
-      {/* Terminal Panel */}
-      {selectedWorktree && (
-        <TerminalPanel
-          isOpen={isPanelOpen && panelContent === "terminal"}
-          onClose={closePanel}
-          worktreePath={selectedWorktree.path}
-          title={selectedWorktree.branch || "Terminal"}
-        />
-      )}
 
       {/* Fork Modal */}
       <ForkWorktreeModal

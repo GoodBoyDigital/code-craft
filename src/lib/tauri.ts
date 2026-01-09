@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 // Worktree types
 export interface Worktree {
@@ -77,4 +78,62 @@ export async function getBranchInfo(
   branchName: string
 ): Promise<BranchInfo> {
   return invoke<BranchInfo>("get_branch_info", { repoPath, branchName });
+}
+
+// Filesystem types
+export interface FileEntry {
+  path: string;
+  name: string;
+  type: "file" | "directory";
+}
+
+// Filesystem commands
+export async function readDirectory(path: string): Promise<FileEntry[]> {
+  return invoke<FileEntry[]>("read_directory", { path });
+}
+
+export async function readFile(path: string): Promise<string> {
+  return invoke<string>("read_file", { path });
+}
+
+export async function writeFile(path: string, content: string): Promise<void> {
+  return invoke<void>("write_file", { path, content });
+}
+
+// PTY commands
+export async function createPtySession(
+  sessionId: string,
+  cwd: string,
+  command?: string
+): Promise<string> {
+  return invoke<string>("create_pty_session", { sessionId, cwd, command });
+}
+
+export async function writeToPty(
+  sessionId: string,
+  data: string
+): Promise<void> {
+  return invoke<void>("write_to_pty", { sessionId, data });
+}
+
+export async function resizePty(
+  sessionId: string,
+  cols: number,
+  rows: number
+): Promise<void> {
+  return invoke<void>("resize_pty", { sessionId, cols, rows });
+}
+
+export async function closePtySession(sessionId: string): Promise<void> {
+  return invoke<void>("close_pty_session", { sessionId });
+}
+
+// PTY event listener
+export async function onPtyOutput(
+  sessionId: string,
+  callback: (data: string) => void
+): Promise<UnlistenFn> {
+  return listen<string>(`pty-output-${sessionId}`, (event) => {
+    callback(event.payload);
+  });
 }

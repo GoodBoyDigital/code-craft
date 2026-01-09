@@ -42,8 +42,47 @@ export function formatRelativeTime(date: Date | string): string {
 }
 
 /**
- * Generate a unique ID
+ * Generate a unique ID (7 characters, alphanumeric)
+ * Use for: file IDs, session IDs, temporary identifiers
  */
 export function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
+}
+
+/**
+ * Files/folders to hide in the file tree
+ */
+const IGNORED_ENTRIES = new Set([
+  "node_modules",
+  "target",
+  "dist",
+  "build",
+  "__pycache__",
+  ".git",
+  ".DS_Store",
+]);
+
+/**
+ * Filter and sort file tree entries for display
+ * - Hides hidden files (starting with .)
+ * - Hides common build/dependency folders
+ * - Sorts directories first, then alphabetically
+ */
+export function filterAndSortEntries<T extends { name: string; type: "file" | "directory" }>(
+  entries: T[]
+): T[] {
+  return entries
+    .filter((entry) => {
+      if (entry.name.startsWith(".")) return false;
+      if (IGNORED_ENTRIES.has(entry.name)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // Directories first
+      if (a.type !== b.type) {
+        return a.type === "directory" ? -1 : 1;
+      }
+      // Then alphabetically
+      return a.name.localeCompare(b.name);
+    });
 }
