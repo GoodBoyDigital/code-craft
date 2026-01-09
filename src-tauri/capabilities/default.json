@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.tauri.app/config/2/capabilities",
+  "identifier": "default",
+  "description": "Default capabilities for Muscat",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "shell:allow-spawn",
+    "shell:allow-execute"
+  ]
+}
